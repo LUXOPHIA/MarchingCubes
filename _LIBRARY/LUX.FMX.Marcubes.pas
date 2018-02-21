@@ -4,7 +4,7 @@ interface //####################################################################
 
 uses System.Classes, System.Math.Vectors, System.Generics.Collections,
      FMX.Types3D, FMX.Controls3D, FMX.MaterialSources,
-     LUX, LUX.D3, LUX.Data.Lattice.T3;
+     LUX, LUX.D3, LUX.Data.Lattice.T3.D3;
 
 type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$【型】
 
@@ -30,7 +30,7 @@ type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
      //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TIterMarcube
 
-     IIterMarcube = interface( IBricIterGridArray3D<Single> )
+     IIterMarcube = interface( ISingleBricIterGridArray3D )
      ['{8FD59B4C-2D40-4262-A737-AD4FAC4B55E3}']
      {protected}
        ///// アクセス
@@ -38,37 +38,29 @@ type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
      {public}
        ///// プロパティ
        property Kind :Byte read GetKind;
-       ///// メソッド
-       function FindPoin( const I_:Byte ) :Integer;
      end;
 
      //-------------------------------------------------------------------------
 
-     TIterMarcube = class( TBricIterGridArray3D<Single>, IIterMarcube )
+     TIterMarcube = class( TSingleBricIterGridArray3D, IIterMarcube )
      private
      protected type
      protected
-       _Parent :TMarcubes;
        ///// アクセス
        function GetKind :Byte;
      public
-       constructor Create( Parent_:TMarcubes );
        ///// プロパティ
        property Kind :Byte read GetKind;
-       ///// メソッド
-       function FindPoin( const I_:Byte ) :Integer;
      end;
 
      //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TMarcubes
 
      TMarcubes = class( TControl3D )
      private
-       EsX, EsY, EsZ :TDictionary<TInteger3D,Integer>;
      protected
        _Geometry :TMeshData;
        _Material :TMaterialSource;
-       _Grids    :TGridArray3D<Single>;
-       _Cube     :IIterMarcube;
+       _Grids    :TSingleGridArray3D;
        ///// アクセス
        ///// メソッド
        procedure Render; override;
@@ -76,8 +68,8 @@ type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
        constructor Create( AOwner_:TComponent ); override;
        destructor Destroy; override;
        ///// プロパティ
-       property Material :TMaterialSource      read _Material write _Material;
-       property Grids    :TGridArray3D<Single> read _Grids;
+       property Material :TMaterialSource    read _Material write _Material;
+       property Grids    :TSingleGridArray3D read _Grids;
        ///// メソッド
        procedure EndUpdate; override;
        procedure MakeModel;
@@ -86,7 +78,6 @@ type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 const //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$【定数】
 
       TRIASTABLE :array[ 0..255 ] of TTrias = (
-
         ( TsN:0; Ts:( ( _1:-1; _2:-1; _3:-1 ), ( _1:-1; _2:-1; _3:-1 ), ( _1:-1; _2:-1; _3:-1 ), ( _1:-1; _2:-1; _3:-1 ), ( _1:-1; _2:-1; _3:-1 ) ) ),
         ( TsN:1; Ts:( ( _1:00; _2:04; _3:09 ), ( _1:-1; _2:-1; _3:-1 ), ( _1:-1; _2:-1; _3:-1 ), ( _1:-1; _2:-1; _3:-1 ), ( _1:-1; _2:-1; _3:-1 ) ) ),
         ( TsN:1; Ts:( ( _1:00; _2:08; _3:06 ), ( _1:-1; _2:-1; _3:-1 ), ( _1:-1; _2:-1; _3:-1 ), ( _1:-1; _2:-1; _3:-1 ), ( _1:-1; _2:-1; _3:-1 ) ) ),
@@ -369,49 +360,17 @@ function TIterMarcube.GetKind :Byte;
 begin
      Result := 0;
 
-     if Grids[ 0, 0, 0 ] < 0 then Result := Result or $01;
-     if Grids[ 1, 0, 0 ] < 0 then Result := Result or $02;
-     if Grids[ 0, 1, 0 ] < 0 then Result := Result or $04;
-     if Grids[ 1, 1, 0 ] < 0 then Result := Result or $08;
-     if Grids[ 0, 0, 1 ] < 0 then Result := Result or $10;
-     if Grids[ 1, 0, 1 ] < 0 then Result := Result or $20;
-     if Grids[ 0, 1, 1 ] < 0 then Result := Result or $40;
-     if Grids[ 1, 1, 1 ] < 0 then Result := Result or $80;
-end;
-
-function TIterMarcube.FindPoin( const I_:Byte ) :Integer;
-begin
-     with _Parent do
-     begin
-          case I_ of
-           00: Result := EsX[ TInteger3D.Create( GX[0], GY[0], GZ[0] ) ];
-           01: Result := EsX[ TInteger3D.Create( GX[0], GY[1], GZ[0] ) ];
-           02: Result := EsX[ TInteger3D.Create( GX[0], GY[0], GZ[1] ) ];
-           03: Result := EsX[ TInteger3D.Create( GX[0], GY[1], GZ[1] ) ];
-
-           04: Result := EsY[ TInteger3D.Create( GX[0], GY[0], GZ[0] ) ];
-           05: Result := EsY[ TInteger3D.Create( GX[0], GY[0], GZ[1] ) ];
-           06: Result := EsY[ TInteger3D.Create( GX[1], GY[0], GZ[0] ) ];
-           07: Result := EsY[ TInteger3D.Create( GX[1], GY[0], GZ[1] ) ];
-
-           08: Result := EsZ[ TInteger3D.Create( GX[1], GY[0], GZ[0] ) ];
-           09: Result := EsZ[ TInteger3D.Create( GX[0], GY[0], GZ[0] ) ];
-           10: Result := EsZ[ TInteger3D.Create( GX[1], GY[1], GZ[0] ) ];
-           11: Result := EsZ[ TInteger3D.Create( GX[0], GY[1], GZ[0] ) ];
-
-          else Result := -1;
-          end;
-     end;
+     if Grids[0,0,0] < 0 then Result := Result or $01;
+     if Grids[1,0,0] < 0 then Result := Result or $02;
+     if Grids[0,1,0] < 0 then Result := Result or $04;
+     if Grids[1,1,0] < 0 then Result := Result or $08;
+     if Grids[0,0,1] < 0 then Result := Result or $10;
+     if Grids[1,0,1] < 0 then Result := Result or $20;
+     if Grids[0,1,1] < 0 then Result := Result or $40;
+     if Grids[1,1,1] < 0 then Result := Result or $80;
 end;
 
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& public
-
-constructor TIterMarcube.Create( Parent_:TMarcubes );
-begin
-     inherited Create( Parent_.Grids );
-
-     _Parent := Parent_;
-end;
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TMarcubes
 
@@ -443,13 +402,56 @@ end;
 
 procedure TMarcubes.MakeModel;
 var
-   X0, X1, Y0, Y1, Z0, Z1 :Integer;
-var
+   EsX, EsY, EsZ :TDictionary<TInteger3D,Integer>;
    Ps :TArray<TPoin>;
-   P :TPoin;
-   X, Y, Z, PsN, I, FsN, J :Integer;
+   C :TIterMarcube;
+//······································
+     function AddPoin( const X_,Y_,Z_:Single ) :Integer;
+     var
+        P :TPoin;
+     begin
+          with P do
+          begin
+               Pos := TPoint3D.Create( X_, Y_, Z_ );
+               Nor := TPoint3D.Create( C.Interp( Pos.X+1, Pos.Y, Pos.Z ) - C.Interp( Pos.X-1, Pos.Y, Pos.Z ),
+                                       C.Interp( Pos.X, Pos.Y+1, Pos.Z ) - C.Interp( Pos.X, Pos.Y-1, Pos.Z ),
+                                       C.Interp( Pos.X, Pos.Y, Pos.Z+1 ) - C.Interp( Pos.X, Pos.Y, Pos.Z-1 ) ).Normalize;
+          end;
+
+          Ps := Ps + [ P ];
+
+          Result := High( Ps );
+     end;
+     //·································
+     function FindPoin( const I_:Byte ) :Integer;
+     begin
+          with C do
+          begin
+               case I_ of
+                00: Result := EsX[ TInteger3D.Create( GX[0], GY[0], GZ[0] ) ];
+                01: Result := EsX[ TInteger3D.Create( GX[0], GY[1], GZ[0] ) ];
+                02: Result := EsX[ TInteger3D.Create( GX[0], GY[0], GZ[1] ) ];
+                03: Result := EsX[ TInteger3D.Create( GX[0], GY[1], GZ[1] ) ];
+
+                04: Result := EsY[ TInteger3D.Create( GX[0], GY[0], GZ[0] ) ];
+                05: Result := EsY[ TInteger3D.Create( GX[0], GY[0], GZ[1] ) ];
+                06: Result := EsY[ TInteger3D.Create( GX[1], GY[0], GZ[0] ) ];
+                07: Result := EsY[ TInteger3D.Create( GX[1], GY[0], GZ[1] ) ];
+
+                08: Result := EsZ[ TInteger3D.Create( GX[1], GY[0], GZ[0] ) ];
+                09: Result := EsZ[ TInteger3D.Create( GX[0], GY[0], GZ[0] ) ];
+                10: Result := EsZ[ TInteger3D.Create( GX[1], GY[1], GZ[0] ) ];
+                11: Result := EsZ[ TInteger3D.Create( GX[0], GY[1], GZ[0] ) ];
+
+               else Result := -1;
+               end;
+          end;
+     end;
+//······································
+var
+   X, Y, Z, X0, X1, Y0, Y1, Z0, Z1, PsN, FsN, I, J :Integer;
    G0, G1, T :Single;
-   Fs :array of TInteger3D;
+   Fs :TArray<TInteger3D>;
    F :TInteger3D;
 begin
      //          200---------201---------202
@@ -474,11 +476,13 @@ begin
      //   |/          |/          |/
      //  020---------021---------022
 
-     EsX.Clear;
-     EsY.Clear;
-     EsZ.Clear;
+     C := TIterMarcube.Create( _Grids );
 
-     //////////
+     EsX := TDictionary<TInteger3D,Integer>.Create;
+     EsY := TDictionary<TInteger3D,Integer>.Create;
+     EsZ := TDictionary<TInteger3D,Integer>.Create;
+
+     ////////// 頂点生成
 
      Ps := [];
 
@@ -495,12 +499,7 @@ begin
                begin
                     T := G0 / ( G0 - G1 );
 
-                    EsX.Add( TInteger3D.Create( X0, Y, Z ), Length( Ps ) );
-
-                    P.Pos := TPoint3D.Create( X0 + T, Y, Z );
-                    P.Nor := TPoint3D.Create( G1-G0, 0, 0 );
-
-                    Ps := Ps + [ P ];
+                    EsX.Add( TInteger3D.Create( X0, Y, Z ), AddPoin( X0 + T, Y, Z ) );
                end;
 
                X0 := X1;
@@ -521,12 +520,7 @@ begin
                begin
                     T := G0 / ( G0 - G1 );
 
-                    EsY.Add( TInteger3D.Create( X, Y0, Z ), Length( Ps ) );
-
-                    P.Pos := TPoint3D.Create( X, Y0 + T, Z );
-                    P.Nor := TPoint3D.Create( 0, G1-G0, 0 );
-
-                    Ps := Ps + [ P ];
+                    EsY.Add( TInteger3D.Create( X, Y0, Z ), AddPoin( X, Y0 + T, Z ) );
                end;
 
                Y0 := Y1;
@@ -547,12 +541,7 @@ begin
                begin
                     T := G0 / ( G0 - G1 );
 
-                    EsZ.Add( TInteger3D.Create( X, Y, Z0 ), Length( Ps ) );
-
-                    P.Pos := TPoint3D.Create( X, Y, Z0 + T );
-                    P.Nor := TPoint3D.Create( 0, 0, G1-G0 );
-
-                    Ps := Ps + [ P ];
+                    EsZ.Add( TInteger3D.Create( X, Y, Z0 ), AddPoin( X, Y, Z0 + T ) );
                end;
 
                Z0 := Z1;
@@ -562,48 +551,52 @@ begin
 
      PsN := Length( Ps );
 
-     //////////
+     ////////// 三角面生成
 
      Fs := [];
 
+
+     C.PosZ := 0;
      for Z := 0 to Grids.BricsZ-1 do
      begin
+          C.PosY := 0;
           for Y := 0 to Grids.BricsY-1 do
           begin
-               _Cube.Pos := TInteger3D.Create( 0, Y, Z );
-
+               C.PosX := 0;
                for X := 0 to Grids.BricsX-1 do
                begin
-                    with TRIASTABLE[ _Cube.Kind ] do
+                    with TRIASTABLE[ C.Kind ] do
                     begin
-                         if TsN > 0 then
+                         for I := 1 to TsN do
                          begin
-                              for I := 1 to TsN do
+                              with Ts[ I ] do
                               begin
-                                   with Ts[ I ] do
-                                   begin
-                                        F._1 := _Cube.FindPoin( _1 );
-                                        F._2 := _Cube.FindPoin( _2 );
-                                        F._3 := _Cube.FindPoin( _3 );
-                                   end;
+                                   F._1 := FindPoin( _1 );
+                                   F._2 := FindPoin( _2 );
+                                   F._3 := FindPoin( _3 );
+                              end;
 
-                                   Fs := Fs + [ F ];
-                              end
-                         end
+                              Fs := Fs + [ F ];
+                         end;
                     end;
-
-                    _Cube.GoNextX;
+                    C.GoNextX;
                end;
+               C.GoNextY;
           end;
+          C.GoNextZ;
      end;
 
      FsN := Length( Fs );
 
      //////////
 
-     EsX.Clear;
-     EsY.Clear;
-     EsZ.Clear;
+     EsX.DisposeOf;
+     EsY.DisposeOf;
+     EsZ.DisposeOf;
+
+     C.DisposeOf;
+
+     ////////// ポリゴン登録
 
      with _Geometry do
      begin
@@ -635,6 +628,8 @@ begin
           end;
      end;
 
+     //////////
+
      Repaint;
 end;
 
@@ -644,28 +639,22 @@ constructor TMarcubes.Create( AOwner_:TComponent );
 begin
      inherited;
 
-     EsX := TDictionary<TInteger3D,Integer>.Create;
-     EsY := TDictionary<TInteger3D,Integer>.Create;
-     EsZ := TDictionary<TInteger3D,Integer>.Create;
-
      _Geometry := TMeshData.Create;
      _Material := nil;
-     _Grids    := TGridArray3D<Single>.Create;
-     _Cube     := TIterMarcube.Create( Self );
+     _Grids    := TSingleGridArray3D.Create;
 
-     _Grids.BricsX := 10;
-     _Grids.BricsY := 10;
-     _Grids.BricsZ := 10;
+     with _Grids do
+     begin
+          BricsX := 10;
+          BricsY := 10;
+          BricsZ := 10;
+     end;
 end;
 
 destructor TMarcubes.Destroy;
 begin
      _Grids   .DisposeOf;
      _Geometry.DisposeOf;
-
-     EsX.DisposeOf;
-     EsY.DisposeOf;
-     EsZ.DisposeOf;
 
      inherited;
 end;
