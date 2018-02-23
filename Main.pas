@@ -73,28 +73,27 @@ var
 begin
      with _Marcubes do
      begin
-          BeginUpdate;
-
-          for Z := 0 to Grids.BricsZ do
+          with Grids do
           begin
-               P.Z := 24 * ( Z / Grids.BricsZ - 0.5 );
-
-               for Y := 0 to Grids.BricsY do
+               for Z := -1 to GridsZ do
                begin
-                    P.Y := 24 * ( Y / Grids.BricsY - 0.5 );
+                    P.Z := 24 * ( Z / BricsZ - 0.5 );
 
-                    for X := 0 to Grids.BricsX do
+                    for Y := -1 to GridsY do
                     begin
-                         P.X := 24 * ( X / Grids.BricsX - 0.5 );
+                         P.Y := 24 * ( Y / BricsY - 0.5 );
 
-                         P2 := P * TMatrix3D.CreateRotationX( DegToRad( Angle_ ) );
+                         for X := -1 to GridsX do
+                         begin
+                              P.X := 24 * ( X / BricsX - 0.5 );
 
-                         Grids[ X, Y, Z ] := Pãodering( P2 );
+                              P2 := P * TMatrix3D.CreateRotationX( DegToRad( Angle_ ) );
+
+                              Grids[ X, Y, Z ] := Pãodering( P2 );
+                         end;
                     end;
                end;
           end;
-
-          EndUpdate;
 
           MakeModel;
      end;
@@ -108,15 +107,15 @@ begin
 
      with _Marcubes do
      begin
-          Parent   := Viewport3D1;
-          HitTest  := False;
-          Material := LightMaterialSource1;
-          Width    := 10;
-          Height   := 10;
-          Depth    := 10;
-          Grids.BricsX   := 100;
-          Grids.BricsY   := 100;
-          Grids.BricsZ   := 100;
+          Parent       := Viewport3D1;
+          HitTest      := False;
+          Material     := LightMaterialSource1;
+          Width        := 10;
+          Height       := 10;
+          Depth        := 10;
+          Grids.BricsX := 100;
+          Grids.BricsY := 100;
+          Grids.BricsZ := 100;
      end;
 
      MakeVoxels( 0 );
