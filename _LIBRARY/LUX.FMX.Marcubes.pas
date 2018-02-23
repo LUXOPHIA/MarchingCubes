@@ -8,7 +8,7 @@ uses System.Classes, System.Math.Vectors, System.Generics.Collections,
 
 type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$【型】
 
-     TIterMarcube  = class;
+     TMarcubeIter  = class;
      TMarcubeGrids = class;
      TMarcubes     = class;
 
@@ -23,7 +23,7 @@ type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
      //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$【クラス】
 
-     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TIterMarcube
+     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TMarcubeIter
 
      IIterMarcube = interface( ISingleBricIterGridArray3D )
      ['{8FD59B4C-2D40-4262-A737-AD4FAC4B55E3}']
@@ -37,7 +37,7 @@ type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
      //-------------------------------------------------------------------------
 
-     TIterMarcube = class( TSingleBricIterGridArray3D, IIterMarcube )
+     TMarcubeIter = class( TSingleBricIterGridArray3D, IIterMarcube )
      private
      protected type
      protected
@@ -58,10 +58,10 @@ type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
        function NewBricIter :TBricIterGridArray3D<Single>; override;
      public
        ///// メソッド
-       procedure ForBrics( const Proc_:TConstProc<TIterMarcube> );
-       procedure ForEdgesX( const Proc_:TConstProc<TIterMarcube> );
-       procedure ForEdgesY( const Proc_:TConstProc<TIterMarcube> );
-       procedure ForEdgesZ( const Proc_:TConstProc<TIterMarcube> );
+       procedure ForBrics( const Proc_:TConstProc<TMarcubeIter> );
+       procedure ForEdgesX( const Proc_:TConstProc<TMarcubeIter> );
+       procedure ForEdgesY( const Proc_:TConstProc<TMarcubeIter> );
+       procedure ForEdgesZ( const Proc_:TConstProc<TMarcubeIter> );
      end;
 
      //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TMarcubes
@@ -102,7 +102,7 @@ uses System.SysUtils, System.RTLConsts;
 
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$【クラス】
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TIterMarcube
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TMarcubeIter
 
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& private
 
@@ -110,7 +110,7 @@ uses System.SysUtils, System.RTLConsts;
 
 /////////////////////////////////////////////////////////////////////// アクセス
 
-function TIterMarcube.GetKind :Byte;
+function TMarcubeIter.GetKind :Byte;
 begin
      Result := 0;
 
@@ -136,42 +136,42 @@ end;
 
 function TMarcubeGrids.NewBricIter :TBricIterGridArray3D<Single>;
 begin
-     Result := TIterMarcube.Create( Self );
+     Result := TMarcubeIter.Create( Self );
 end;
 
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& public
 
 /////////////////////////////////////////////////////////////////////// メソッド
 
-procedure TMarcubeGrids.ForBrics( const Proc_:TConstProc<TIterMarcube> );
+procedure TMarcubeGrids.ForBrics( const Proc_:TConstProc<TMarcubeIter> );
 begin
      inherited ForBrics( procedure( const B_:TSingleBricIterGridArray3D )
      begin
-          Proc_( B_ as TIterMarcube );
+          Proc_( B_ as TMarcubeIter );
      end );
 end;
 
-procedure TMarcubeGrids.ForEdgesX( const Proc_:TConstProc<TIterMarcube> );
+procedure TMarcubeGrids.ForEdgesX( const Proc_:TConstProc<TMarcubeIter> );
 begin
      inherited ForEdgesX( procedure( const E_:TSingleBricIterGridArray3D )
      begin
-          Proc_( E_ as TIterMarcube );
+          Proc_( E_ as TMarcubeIter );
      end );
 end;
 
-procedure TMarcubeGrids.ForEdgesY( const Proc_:TConstProc<TIterMarcube> );
+procedure TMarcubeGrids.ForEdgesY( const Proc_:TConstProc<TMarcubeIter> );
 begin
      inherited ForEdgesY( procedure( const E_:TSingleBricIterGridArray3D )
      begin
-          Proc_( E_ as TIterMarcube );
+          Proc_( E_ as TMarcubeIter );
      end );
 end;
 
-procedure TMarcubeGrids.ForEdgesZ( const Proc_:TConstProc<TIterMarcube> );
+procedure TMarcubeGrids.ForEdgesZ( const Proc_:TConstProc<TMarcubeIter> );
 begin
      inherited ForEdgesZ( procedure( const E_:TSingleBricIterGridArray3D )
      begin
-          Proc_( E_ as TIterMarcube );
+          Proc_( E_ as TMarcubeIter );
      end );
 end;
 
@@ -205,7 +205,7 @@ end;
 
 procedure TMarcubes.MakeModel;
 var
-   C :TIterMarcube;
+   C :TMarcubeIter;
    EsX, EsY, EsZ :TDictionary<TInteger3D,Integer>;
    Ps :TArray<TPoin>;
    AddPoin :TConstFunc<Single,Single,Single,Integer>;
@@ -236,7 +236,7 @@ begin
      //   |/          |/          |/
      //  020---------021---------022
 
-     C := TIterMarcube.Create( _Grids );
+     C := TMarcubeIter.Create( _Grids );
 
      EsX := TDictionary<TInteger3D,Integer>.Create;
      EsY := TDictionary<TInteger3D,Integer>.Create;
