@@ -114,14 +114,13 @@ end;
 
 procedure TMarcubes.MakeModel;
 var
-   C :TMarcubeIter;
+   C, G :TMarcubeIter;
    EsX, EsY, EsZ :TDictionary<TInteger3D,Integer>;
    Ps :TArray<TPoin>;
    AddPoin :TConstFunc<Single,Single,Single,Integer>;
-   X, Y, Z, X0, X1, Y0, Y1, Z0, Z1, PsN, FsN, I, J :Integer;
-   G0, G1, d :Single;
    Fs :TArray<TInteger3D>;
    FindPoin :TConstFunc<Byte,Integer>;
+   PsN, FsN, I, J :Integer;
 begin
      //          200---------201---------202
      //          /|          /|          /|
@@ -153,116 +152,111 @@ begin
 
      ////////// 頂点生成
 
+     G := TMarcubeIter.Create( _Grids );
+
      Ps := [];
 
      AddPoin := function ( const X_,Y_,Z_:Single ) :Integer
+                var
+                   P :TPoin;
+                begin
+                     with P do
+                     begin
+                          Pos := TPoint3D.Create( X_, Y_, Z_ );
+                          Nor :=          G.Grad( X_, Y_, Z_ );
+                     end;
+
+                     Ps := Ps + [ P ];
+
+                     Result := High( Ps );
+                end;
+
+     with C do
+     begin
+          ForEdgesX( procedure
           var
-             P :TPoin;
+             G0, G1, d :Single;
           begin
-               with P do
-               begin
-                    Pos := TPoint3D.Create( X_, Y_, Z_ );
-                    Nor :=          C.Grad( X_, Y_, Z_ );
-               end;
-
-               Ps := Ps + [ P ];
-
-               Result := High( Ps );
-          end;
-
-     for Z := 0 to Grids.BricsZ do
-     for Y := 0 to Grids.BricsY do
-     begin
-          X0 := 0;
-          G0 := Grids[ X0, Y, Z ];
-          for X1 := 1 to Grids.BricsX do
-          begin
-               G1 := Grids[ X1, Y, Z ];
+               G0 := Grids[ 0, 0, 0 ];
+               G1 := Grids[ 1, 0, 0 ];
 
                if ( G0 < 0 ) xor ( G1 < 0 ) then
                begin
                     d := G0 / ( G0 - G1 );
 
-                    EsX.Add( TInteger3D.Create( X0, Y, Z ), AddPoin( X0 + d, Y, Z ) );
+                    EsX.Add( Gi[ 0, 0, 0 ], AddPoin( GiX[ 0 ] + d,
+                                                     GiY[ 0 ]    ,
+                                                     GiZ[ 0 ]     ) );
                end;
+          end );
 
-               X0 := X1;
-               G0 := G1;
-          end;
-     end;
-
-     for X := 0 to Grids.BricsX do
-     for Z := 0 to Grids.BricsZ do
-     begin
-          Y0 := 0;
-          G0 := Grids[ X, Y0, Z ];
-          for Y1 := 1 to Grids.BricsY do
+          ForEdgesY( procedure
+          var
+             G0, G1, d :Single;
           begin
-               G1 := Grids[ X, Y1, Z ];
+               G0 := Grids[ 0, 0, 0 ];
+               G1 := Grids[ 0, 1, 0 ];
 
                if ( G0 < 0 ) xor ( G1 < 0 ) then
                begin
                     d := G0 / ( G0 - G1 );
 
-                    EsY.Add( TInteger3D.Create( X, Y0, Z ), AddPoin( X, Y0 + d, Z ) );
+                    EsY.Add( Gi[ 0, 0, 0 ], AddPoin( GiX[ 0 ]    ,
+                                                     GiY[ 0 ] + d,
+                                                     GiZ[ 0 ]     ) );
                end;
+          end );
 
-               Y0 := Y1;
-               G0 := G1;
-          end;
-     end;
-
-     for Y := 0 to Grids.BricsY do
-     for X := 0 to Grids.BricsX do
-     begin
-          Z0 := 0;
-          G0 := Grids[ X, Y, Z0 ];
-          for Z1 := 1 to Grids.BricsZ do
+          ForEdgesZ( procedure
+          var
+             G0, G1, d :Single;
           begin
-               G1 := Grids[ X, Y, Z1 ];
+               G0 := Grids[ 0, 0, 0 ];
+               G1 := Grids[ 0, 0, 1 ];
 
                if ( G0 < 0 ) xor ( G1 < 0 ) then
                begin
                     d := G0 / ( G0 - G1 );
 
-                    EsZ.Add( TInteger3D.Create( X, Y, Z0 ), AddPoin( X, Y, Z0 + d ) );
+                    EsZ.Add( Gi[ 0, 0, 0 ], AddPoin( GiX[ 0 ]    ,
+                                                     GiY[ 0 ]    ,
+                                                     GiZ[ 0 ] + d ) );
                end;
-
-               Z0 := Z1;
-               G0 := G1;
-          end;
+          end );
      end;
 
      PsN := Length( Ps );
 
-     ////////// 三角面生成
+     G.DisposeOf;
+
+     ////////// ポリゴン生成
 
      Fs := [];
 
      FindPoin := function ( const I_:Byte ) :Integer
-          begin
-               with C do
-               begin
-                    case I_ of
-                     00: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 0 ] ) ];
-                     01: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 1 ], GZ[ 0 ] ) ];
-                     02: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 1 ] ) ];
-                     03: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 1 ], GZ[ 1 ] ) ];
+                 begin
+                      with C do
+                      begin
+                           case I_ of
+                            00: Result := EsX[ Gi[ 0, 0, 0 ] ];
+                            01: Result := EsX[ Gi[ 0, 1, 0 ] ];
+                            02: Result := EsX[ Gi[ 0, 0, 1 ] ];
+                            03: Result := EsX[ Gi[ 0, 1, 1 ] ];
 
-                     04: Result := EsY[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 0 ] ) ];
-                     05: Result := EsY[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 1 ] ) ];
-                     06: Result := EsY[ TInteger3D.Create( GX[ 1 ], GY[ 0 ], GZ[ 0 ] ) ];
-                     07: Result := EsY[ TInteger3D.Create( GX[ 1 ], GY[ 0 ], GZ[ 1 ] ) ];
+                            04: Result := EsY[ Gi[ 0, 0, 0 ] ];
+                            05: Result := EsY[ Gi[ 0, 0, 1 ] ];
+                            06: Result := EsY[ Gi[ 1, 0, 0 ] ];
+                            07: Result := EsY[ Gi[ 1, 0, 1 ] ];
 
-                     08: Result := EsZ[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 0 ] ) ];
-                     09: Result := EsZ[ TInteger3D.Create( GX[ 1 ], GY[ 0 ], GZ[ 0 ] ) ];
-                     10: Result := EsZ[ TInteger3D.Create( GX[ 0 ], GY[ 1 ], GZ[ 0 ] ) ];
-                     11: Result := EsZ[ TInteger3D.Create( GX[ 1 ], GY[ 1 ], GZ[ 0 ] ) ];
+                            08: Result := EsZ[ Gi[ 0, 0, 0 ] ];
+                            09: Result := EsZ[ Gi[ 1, 0, 0 ] ];
+                            10: Result := EsZ[ Gi[ 0, 1, 0 ] ];
+                            11: Result := EsZ[ Gi[ 1, 1, 0 ] ];
 
-                    else Result := -1;
-                    end;
-               end;
-          end;
+                           else Result := -1;
+                           end;
+                      end;
+                 end;
 
      C.ForBrics( procedure
      var
@@ -292,7 +286,7 @@ begin
 
      C.DisposeOf;
 
-     ////////// ポリゴン登録
+     ////////// メッシュ生成
 
      with _Geometry do
      begin
