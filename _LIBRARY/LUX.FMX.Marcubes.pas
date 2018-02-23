@@ -4,11 +4,13 @@ interface //####################################################################
 
 uses System.Classes, System.Math.Vectors, System.Generics.Collections,
      FMX.Types3D, FMX.Controls3D, FMX.MaterialSources,
-     LUX, LUX.D3, LUX.Data.Lattice.T3.D3;
+     LUX, LUX.D3, LUX.Data.Lattice.T3, LUX.Data.Lattice.T3.D3;
 
 type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$【型】
 
-     TMarcubes = class;
+     TIterMarcube  = class;
+     TMarcubeGrids = class;
+     TMarcubes     = class;
 
      //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$【レコード】
 
@@ -46,6 +48,22 @@ type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
        property Kind :Byte read GetKind;
      end;
 
+     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TMarcubeGrids
+
+     TMarcubeGrids = class( TSingleGridArray3D )
+     private
+     protected type
+     protected
+       ///// メソッド
+       function NewBricIter :TBricIterGridArray3D<Single>; override;
+     public
+       ///// メソッド
+       procedure ForBrics( const Proc_:TConstProc<TIterMarcube> );
+       procedure ForEdgesX( const Proc_:TConstProc<TIterMarcube> );
+       procedure ForEdgesY( const Proc_:TConstProc<TIterMarcube> );
+       procedure ForEdgesZ( const Proc_:TConstProc<TIterMarcube> );
+     end;
+
      //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TMarcubes
 
      TMarcubes = class( TControl3D )
@@ -53,7 +71,7 @@ type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
      protected
        _Geometry :TMeshData;
        _Material :TMaterialSource;
-       _Grids    :TSingleGridArray3D;
+       _Grids    :TMarcubeGrids;
        ///// アクセス
        ///// メソッド
        procedure Render; override;
@@ -61,8 +79,8 @@ type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
        constructor Create( AOwner_:TComponent ); override;
        destructor Destroy; override;
        ///// プロパティ
-       property Material :TMaterialSource    read _Material write _Material;
-       property Grids    :TSingleGridArray3D read _Grids;
+       property Material :TMaterialSource read _Material write _Material;
+       property Grids    :TMarcubeGrids   read _Grids;
        ///// メソッド
        procedure EndUpdate; override;
        procedure MakeModel;
@@ -107,6 +125,55 @@ begin
 end;
 
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& public
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TMarcubeGrids
+
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& private
+
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& protected
+
+/////////////////////////////////////////////////////////////////////// メソッド
+
+function TMarcubeGrids.NewBricIter :TBricIterGridArray3D<Single>;
+begin
+     Result := TIterMarcube.Create( Self );
+end;
+
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& public
+
+/////////////////////////////////////////////////////////////////////// メソッド
+
+procedure TMarcubeGrids.ForBrics( const Proc_:TConstProc<TIterMarcube> );
+begin
+     inherited ForBrics( procedure( const B_:TSingleBricIterGridArray3D )
+     begin
+          Proc_( B_ as TIterMarcube );
+     end );
+end;
+
+procedure TMarcubeGrids.ForEdgesX( const Proc_:TConstProc<TIterMarcube> );
+begin
+     inherited ForEdgesX( procedure( const E_:TSingleBricIterGridArray3D )
+     begin
+          Proc_( E_ as TIterMarcube );
+     end );
+end;
+
+procedure TMarcubeGrids.ForEdgesY( const Proc_:TConstProc<TIterMarcube> );
+begin
+     inherited ForEdgesY( procedure( const E_:TSingleBricIterGridArray3D )
+     begin
+          Proc_( E_ as TIterMarcube );
+     end );
+end;
+
+procedure TMarcubeGrids.ForEdgesZ( const Proc_:TConstProc<TIterMarcube> );
+begin
+     inherited ForEdgesZ( procedure( const E_:TSingleBricIterGridArray3D )
+     begin
+          Proc_( E_ as TIterMarcube );
+     end );
+end;
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TMarcubes
 
@@ -362,7 +429,7 @@ begin
 
      _Geometry := TMeshData.Create;
      _Material := nil;
-     _Grids    := TSingleGridArray3D.Create;
+     _Grids    := TMarcubeGrids.Create;
 
      with _Grids do
      begin
