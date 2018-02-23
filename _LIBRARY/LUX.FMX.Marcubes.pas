@@ -138,58 +138,14 @@ end;
 
 procedure TMarcubes.MakeModel;
 var
+   C :TIterMarcube;
    EsX, EsY, EsZ :TDictionary<TInteger3D,Integer>;
    Ps :TArray<TPoin>;
-   C :TIterMarcube;
-//······································
-     function AddPoin( const X_,Y_,Z_:Single ) :Integer;
-     var
-        P :TPoin;
-     begin
-          with P do
-          begin
-               Pos := TPoint3D.Create( X_, Y_, Z_ );
-               Nor := TPoint3D.Create( C.Interp( Pos.X+1, Pos.Y  , Pos.Z   ) - C.Interp( Pos.X-1, Pos.Y  , Pos.Z   ),
-                                       C.Interp( Pos.X  , Pos.Y+1, Pos.Z   ) - C.Interp( Pos.X  , Pos.Y-1, Pos.Z   ),
-                                       C.Interp( Pos.X  , Pos.Y  , Pos.Z+1 ) - C.Interp( Pos.X  , Pos.Y  , Pos.Z-1 ) ).Normalize;
-          end;
-
-          Ps := Ps + [ P ];
-
-          Result := High( Ps );
-     end;
-     //·································
-     function FindPoin( const I_:Byte ) :Integer;
-     begin
-          with C do
-          begin
-               case I_ of
-                00: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 0 ] ) ];
-                01: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 1 ], GZ[ 0 ] ) ];
-                02: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 1 ] ) ];
-                03: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 1 ], GZ[ 1 ] ) ];
-
-                04: Result := EsY[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 0 ] ) ];
-                05: Result := EsY[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 1 ] ) ];
-                06: Result := EsY[ TInteger3D.Create( GX[ 1 ], GY[ 0 ], GZ[ 0 ] ) ];
-                07: Result := EsY[ TInteger3D.Create( GX[ 1 ], GY[ 0 ], GZ[ 1 ] ) ];
-
-                08: Result := EsZ[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 0 ] ) ];
-                09: Result := EsZ[ TInteger3D.Create( GX[ 1 ], GY[ 0 ], GZ[ 0 ] ) ];
-                10: Result := EsZ[ TInteger3D.Create( GX[ 0 ], GY[ 1 ], GZ[ 0 ] ) ];
-                11: Result := EsZ[ TInteger3D.Create( GX[ 1 ], GY[ 1 ], GZ[ 0 ] ) ];
-
-               else Result := -1;
-               end;
-          end;
-     end;
-//······································
-var
+   AddPoin :TConstFunc<Single,Single,Single,Integer>;
    X, Y, Z, X0, X1, Y0, Y1, Z0, Z1, PsN, FsN, I, J :Integer;
    G0, G1, d :Single;
    Fs :TArray<TInteger3D>;
-   F :TInteger3D;
-   T :TArray<Byte>;
+   FindPoin :TConstFunc<Byte,Integer>;
 begin
      //          200---------201---------202
      //          /|          /|          /|
@@ -222,6 +178,21 @@ begin
      ////////// 頂点生成
 
      Ps := [];
+
+     AddPoin := function ( const X_,Y_,Z_:Single ) :Integer
+          var
+             P :TPoin;
+          begin
+               with P do
+               begin
+                    Pos := TPoint3D.Create( X_, Y_, Z_ );
+                    Nor :=          C.Grad( X_, Y_, Z_ );
+               end;
+
+               Ps := Ps + [ P ];
+
+               Result := High( Ps );
+          end;
 
      for Z := 0 to Grids.BricsZ do
      for Y := 0 to Grids.BricsY do
@@ -292,34 +263,48 @@ begin
 
      Fs := [];
 
-     C.PosZ := 0;
-     for Z := 0 to Grids.BricsZ-1 do
-     begin
-          C.PosY := 0;
-          for Y := 0 to Grids.BricsY-1 do
+     FindPoin := function ( const I_:Byte ) :Integer
           begin
-               C.PosX := 0;
-               for X := 0 to Grids.BricsX-1 do
+               with C do
                begin
-                    begin
-                         for T in TRIAsTABLE[ C.Kind ] do
-                         begin
-                              with F do
-                              begin
-                                   _1 := FindPoin( T[ 0 ] );
-                                   _2 := FindPoin( T[ 1 ] );
-                                   _3 := FindPoin( T[ 2 ] );
-                              end;
+                    case I_ of
+                     00: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 0 ] ) ];
+                     01: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 1 ], GZ[ 0 ] ) ];
+                     02: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 1 ] ) ];
+                     03: Result := EsX[ TInteger3D.Create( GX[ 0 ], GY[ 1 ], GZ[ 1 ] ) ];
 
-                              Fs := Fs + [ F ];
-                         end;
+                     04: Result := EsY[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 0 ] ) ];
+                     05: Result := EsY[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 1 ] ) ];
+                     06: Result := EsY[ TInteger3D.Create( GX[ 1 ], GY[ 0 ], GZ[ 0 ] ) ];
+                     07: Result := EsY[ TInteger3D.Create( GX[ 1 ], GY[ 0 ], GZ[ 1 ] ) ];
+
+                     08: Result := EsZ[ TInteger3D.Create( GX[ 0 ], GY[ 0 ], GZ[ 0 ] ) ];
+                     09: Result := EsZ[ TInteger3D.Create( GX[ 1 ], GY[ 0 ], GZ[ 0 ] ) ];
+                     10: Result := EsZ[ TInteger3D.Create( GX[ 0 ], GY[ 1 ], GZ[ 0 ] ) ];
+                     11: Result := EsZ[ TInteger3D.Create( GX[ 1 ], GY[ 1 ], GZ[ 0 ] ) ];
+
+                    else Result := -1;
                     end;
-                    C.GoNextX;
                end;
-               C.GoNextY;
           end;
-          C.GoNextZ;
-     end;
+
+     C.ForBrics( procedure
+     var
+        T :TArray<Byte>;
+        F :TInteger3D;
+     begin
+          for T in TRIAsTABLE[ C.Kind ] do
+          begin
+               with F do
+               begin
+                    _1 := FindPoin( T[ 0 ] );
+                    _2 := FindPoin( T[ 1 ] );
+                    _3 := FindPoin( T[ 2 ] );
+               end;
+
+               Fs := Fs + [ F ];
+          end;
+     end );
 
      FsN := Length( Fs );
 
@@ -356,14 +341,15 @@ begin
                J := 0;
                for I := 0 to FsN-1 do
                begin
-                    Indices[ J ] := Fs[ I ]._3;  Inc( J );
-                    Indices[ J ] := Fs[ I ]._2;  Inc( J );
-                    Indices[ J ] := Fs[ I ]._1;  Inc( J );
+                    with Fs[ I ] do
+                    begin
+                         Indices[ J ] := _3;  Inc( J );
+                         Indices[ J ] := _2;  Inc( J );
+                         Indices[ J ] := _1;  Inc( J );
+                    end;
                end;
           end;
      end;
-
-     //////////
 
      Repaint;
 end;
