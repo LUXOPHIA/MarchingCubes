@@ -7,7 +7,7 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
   System.Math.Vectors,
   FMX.Types3D, FMX.MaterialSources, FMX.Objects3D, FMX.Controls3D, FMX.Viewport3D,
-  LUX.FMX.Marcubes;
+  LUX.Marcubes.FMX;
 
 type
   TForm1 = class(TForm)

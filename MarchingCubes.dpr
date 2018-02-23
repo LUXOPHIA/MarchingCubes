@@ -4,7 +4,7 @@ uses
   System.StartUpCopy,
   FMX.Forms,
   Main in 'Main.pas' {Form1},
-  LUX.FMX.Marcubes in '_LIBRARY\LUX.FMX.Marcubes.pas',
+  LUX.Marcubes.FMX in '_LIBRARY\LUX.Marcubes.FMX.pas',
   LUX.D4.M4 in '_LIBRARY\LUXOPHIA\LUX\LUX.D4.M4.pas',
   LUX.D4 in '_LIBRARY\LUXOPHIA\LUX\LUX.D4.pas',
   LUX.D4.V4 in '_LIBRARY\LUXOPHIA\LUX\LUX.D4.V4.pas',
@@ -24,7 +24,8 @@ uses
   LUX.Data.Lattice.T3 in '_LIBRARY\LUXOPHIA\LUX\» Data\LUX.Data.Lattice.T3.pas',
   LUX.Data.Lattice.T1 in '_LIBRARY\LUXOPHIA\LUX\» Data\LUX.Data.Lattice.T1.pas',
   LUX.Data.Lattice.T2 in '_LIBRARY\LUXOPHIA\LUX\» Data\LUX.Data.Lattice.T2.pas',
-  LUX.Data.Lattice.T3.D3 in '_LIBRARY\LUXOPHIA\LUX\» Data\LUX.Data.Lattice.T3.D3.pas';
+  LUX.Data.Lattice.T3.D3 in '_LIBRARY\LUXOPHIA\LUX\» Data\LUX.Data.Lattice.T3.D3.pas',
+  LUX.Marcubes in '_LIBRARY\LUX.Marcubes.pas';
 
 {$R *.res}
 
