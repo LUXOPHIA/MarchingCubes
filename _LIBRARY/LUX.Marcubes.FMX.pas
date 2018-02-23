@@ -92,14 +92,7 @@ begin
 
      _Geometry := TMeshData.Create;
      _Material := nil;
-     _Grids    := TMarcubeGrids.Create;
-
-     with _Grids do
-     begin
-          BricsX := 10;
-          BricsY := 10;
-          BricsZ := 10;
-     end;
+     _Grids    := TMarcubeGrids.Create( 10, 10, 10, 1 );
 end;
 
 destructor TMarcubes.Destroy;
