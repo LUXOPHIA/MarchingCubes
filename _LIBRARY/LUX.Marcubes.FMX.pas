@@ -12,13 +12,6 @@ type //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
      //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$【レコード】
 
-     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TVert
-
-     TPoin = record
-       Pos :TPoint3D;
-       Nor :TPoint3D;
-     end;
-
      //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$【クラス】
 
      //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TMarcubes
@@ -107,10 +100,10 @@ end;
 
 procedure TMarcubes.MakeModel;
 var
-   C, G :TMarcubeIter;
+   C :TMarcubeIter;
    EsX, EsY, EsZ :TDictionary<TInteger3D,Integer>;
-   Ps :TArray<TPoin>;
-   AddPoin :TConstFunc<Single,Single,Single,Integer>;
+   Ps :TArray<TSingleRay3D>;
+   AddPoin :TConstFunc<TSingle3D,TSingle3D,Integer>;
    Fs :TArray<TInteger3D>;
    FindPoin :TConstFunc<Byte,Integer>;
    PsN, FsN, I, J :Integer;
@@ -145,18 +138,16 @@ begin
 
      ////////// 頂点生成
 
-     G := TMarcubeIter.Create( _Grids );
-
      Ps := [];
 
-     AddPoin := function ( const X_,Y_,Z_:Single ) :Integer
+     AddPoin := function ( const I_,d_:TSingle3D ) :Integer
                 var
-                   P :TPoin;
+                   P :TSingleRay3D;
                 begin
                      with P do
                      begin
-                          Pos := TPoint3D.Create( X_, Y_, Z_ );
-                          Nor :=          G.Grad( X_, Y_, Z_ );
+                          Pos := I_ + d_;
+                          Vec := C.Grad( d_ );
                      end;
 
                      Ps := Ps + [ P ];
@@ -168,59 +159,60 @@ begin
      begin
           ForEdgesX( procedure
           var
-             G0, G1, d :Single;
+             G0, G1 :Single;
+             d :TSingle3D;
           begin
                G0 := Grids[ 0, 0, 0 ];
                G1 := Grids[ 1, 0, 0 ];
 
                if ( G0 < 0 ) xor ( G1 < 0 ) then
                begin
-                    d := G0 / ( G0 - G1 );
+                    d.X := G0 / ( G0 - G1 );
+                    d.Y := 0;
+                    d.Z := 0;
 
-                    EsX.Add( Gi[ 0, 0, 0 ], AddPoin( GiX[ 0 ] + d,
-                                                     GiY[ 0 ]    ,
-                                                     GiZ[ 0 ]     ) );
+                    EsX.Add( Gi[ 0, 0, 0 ], AddPoin( Gi[ 0, 0, 0 ], d ) );
                end;
           end );
 
           ForEdgesY( procedure
           var
-             G0, G1, d :Single;
+             G0, G1 :Single;
+             d :TSingle3D;
           begin
                G0 := Grids[ 0, 0, 0 ];
                G1 := Grids[ 0, 1, 0 ];
 
                if ( G0 < 0 ) xor ( G1 < 0 ) then
                begin
-                    d := G0 / ( G0 - G1 );
+                    d.X := 0;
+                    d.Y := G0 / ( G0 - G1 );
+                    d.Z := 0;
 
-                    EsY.Add( Gi[ 0, 0, 0 ], AddPoin( GiX[ 0 ]    ,
-                                                     GiY[ 0 ] + d,
-                                                     GiZ[ 0 ]     ) );
+                    EsY.Add( Gi[ 0, 0, 0 ], AddPoin( Gi[ 0, 0, 0 ], d ) );
                end;
           end );
 
           ForEdgesZ( procedure
           var
-             G0, G1, d :Single;
+             G0, G1 :Single;
+             d :TSingle3D;
           begin
                G0 := Grids[ 0, 0, 0 ];
                G1 := Grids[ 0, 0, 1 ];
 
                if ( G0 < 0 ) xor ( G1 < 0 ) then
                begin
-                    d := G0 / ( G0 - G1 );
+                    d.X := 0;
+                    d.Y := 0;
+                    d.Z := G0 / ( G0 - G1 );
 
-                    EsZ.Add( Gi[ 0, 0, 0 ], AddPoin( GiX[ 0 ]    ,
-                                                     GiY[ 0 ]    ,
-                                                     GiZ[ 0 ] + d ) );
+                    EsZ.Add( Gi[ 0, 0, 0 ], AddPoin( Gi[ 0, 0, 0 ], d ) );
                end;
           end );
      end;
 
      PsN := Length( Ps );
-
-     G.DisposeOf;
 
      ////////// ポリゴン生成
 
@@ -292,7 +284,7 @@ begin
                     with Ps[ I ] do
                     begin
                          Vertices[ I ] := Pos;
-                         Normals [ I ] := Nor;
+                         Normals [ I ] := Vec;
                     end;
                end;
           end;
