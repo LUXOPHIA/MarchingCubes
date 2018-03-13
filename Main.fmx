@@ -85,16 +85,9 @@ object Form1: TForm1
     Left = 720
     Top = 25
   end
-  object Timer1: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = Timer1Timer
-    Left = 30
-    Top = 25
-  end
   object ColorMaterialSource1: TColorMaterialSource
     Color = claRed
-    Left = 195
-    Top = 50
+    Left = 70
+    Top = 25
   end
 end

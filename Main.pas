@@ -19,13 +19,11 @@ type
     Grid3D1: TGrid3D;
     StrokeCube1: TStrokeCube;
     LightMaterialSource1: TLightMaterialSource;
-    Timer1: TTimer;
     ColorMaterialSource1: TColorMaterialSource;
     procedure FormCreate(Sender: TObject);
     procedure Viewport3D1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure Viewport3D1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
     procedure Viewport3D1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
-    procedure Timer1Timer(Sender: TObject);
   private
     { private 宣言 }
     _MouseS :TShiftState;
@@ -35,7 +33,7 @@ type
     { public 宣言 }
     _Marcubes :TMarcubes;
     ///// メソッド
-    procedure MakeVoxels( const Angle_:Single );
+    procedure MakeVoxels;
   end;
 
 var
@@ -66,15 +64,29 @@ end;
 
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& public
 
-procedure TForm1.MakeVoxels( const Angle_:Single );
+procedure TForm1.MakeVoxels;
 var
    X, Y, Z :Integer;
-   P, P2 :TPoint3D;
+   P :TPoint3D;
 begin
      with _Marcubes do
      begin
           with Grids do
           begin
+               //    -1   0  +1  +2  +3  +4
+               //  -1 +---+---+---+---+---+
+               //     |///|///|///|///|///|
+               //   0 +---*---*---*---*---+
+               //     |///| 1 | 2 | 3 |///|  BricsX = 3 = GridsX-1
+               //  +1 +---*---*---*---*---+
+               //     |///|   |   |   |///|
+               //  +2 +---*---*---*---*---+
+               //     |///|   |   |   |///|
+               //  +3 +---*---*---*---*---+
+               //     |///|///|///|///|///|
+               //  +4 +---+---+---+---+---+
+               //         1   2   3   4      GridsX = 4 = BricsX+1
+
                for Z := -1 to GridsZ do
                begin
                     P.Z := 24 * ( Z / BricsZ - 0.5 );
@@ -87,15 +99,13 @@ begin
                          begin
                               P.X := 24 * ( X / BricsX - 0.5 );
 
-                              P2 := P * TMatrix3D.CreateRotationX( DegToRad( Angle_ ) );
-
-                              Grids[ X, Y, Z ] := Pãodering( P2 );
+                              Grids[ X, Y, Z ] := Pãodering( P );
                          end;
                     end;
                end;
           end;
 
-          MakeModel;
+          MakeModel;  // ポリゴンモデル生成
      end;
 end;
 
@@ -118,7 +128,7 @@ begin
           Grids.BricsZ := 100;
      end;
 
-     MakeVoxels( 0 );
+     MakeVoxels;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,15 +159,6 @@ begin
      Viewport3D1MouseMove( Sender, Shift, X, Y );
 
      _MouseS := [];
-end;
-
-//------------------------------------------------------------------------------
-
-procedure TForm1.Timer1Timer(Sender: TObject);
-begin
-     MakeVoxels( _FrameI );
-
-     Inc( _FrameI );
 end;
 
 end. //######################################################################### ■
